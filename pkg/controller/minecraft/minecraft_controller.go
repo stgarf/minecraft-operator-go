@@ -300,6 +300,7 @@ func newServiceForCR(cr *interviewv1alpha1.Minecraft) *corev1.Service {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      cr.Name,
 			Namespace: cr.Namespace,
+			Labels:    labels,
 		},
 		Spec: corev1.ServiceSpec{
 			Ports: []corev1.ServicePort{
