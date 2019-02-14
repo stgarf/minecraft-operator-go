@@ -105,6 +105,7 @@ func (r *ReconcileMinecraft) Reconcile(request reconcile.Request) (reconcile.Res
 	// Define a PVC as well
 	pvc := newPersistantVolumeClaimForCR(instance)
 	pod := newPodForCR(instance)
+	lb := newServiceForCR(instance)
 
 	// Set Minecraft instance as the owner and controller for PVC
 	if err := controllerutil.SetControllerReference(instance, pvc, r.scheme); err != nil {
@@ -116,11 +117,16 @@ func (r *ReconcileMinecraft) Reconcile(request reconcile.Request) (reconcile.Res
 		return reconcile.Result{}, err
 	}
 
+	// Set Minecraft instance as the owner and controller for load balancer
+	if err := controllerutil.SetControllerReference(instance, lb, r.scheme); err != nil {
+		return reconcile.Result{}, err
+	}
+
 	// Check if this PVC already exists
 	foundPVC := &corev1.PersistentVolumeClaim{}
 	err = r.client.Get(context.TODO(), types.NamespacedName{Name: pvc.Name, Namespace: pvc.Namespace}, foundPVC)
 	if err != nil && errors.IsNotFound(err) {
-		reqLogger.Info("Creating a new PersistantVolumeClaim", "Pod.Namespace", pvc.Namespace, "Pod.Name", pvc.Name)
+		reqLogger.Info("Creating a new PersistantVolumeClaim", "PersistantVolumeClaim.Namespace", pvc.Namespace, "PersistantVolumeClaim.Name", pvc.Name)
 		err = r.client.Create(context.TODO(), pvc)
 		if err != nil {
 			return reconcile.Result{}, err
@@ -128,8 +134,8 @@ func (r *ReconcileMinecraft) Reconcile(request reconcile.Request) (reconcile.Res
 	} else if err != nil {
 		return reconcile.Result{}, err
 	} else {
-		// Pod already exists - don't requeue
-		reqLogger.Info("Skip reconcile: PersistantVolumeClaim already exists", "Pod.Namespace", foundPVC.Namespace, "Pod.Name", foundPVC.Name)
+		// PVC already exists - don't requeue
+		reqLogger.Info("Skip reconcile: PersistantVolumeClaim already exists", "PersistantVolumeClaim.Namespace", foundPVC.Namespace, "PersistantVolumeClaim.Name", foundPVC.Name)
 	}
 
 	// Check if this Pod already exists
@@ -163,22 +169,23 @@ func (r *ReconcileMinecraft) Reconcile(request reconcile.Request) (reconcile.Res
 	   		// Pod already exists - don't requeue
 	   		reqLogger.Info("Skip reconcile: VolumeMount already exists", "Pod.Namespace", foundVolumeMount.Namespace, "Pod.Name", foundVolumeMount.Name)
 	   	}
+	*/
 
-	   	// Check if this Service already exists
-	   	foundService := &corev1.Service{}
-	   	err = r.client.Get(context.TODO(), types.NamespacedName{Name: pod.Name, Namespace: pod.Namespace}, foundService)
-	   	if err != nil && errors.IsNotFound(err) {
-	   		reqLogger.Info("Creating a new Service", "Pod.Namespace", pod.Namespace, "Pod.Name", pod.Name)
-	   		err = r.client.Create(context.TODO(), pod)
-	   		if err != nil {
-	   			return reconcile.Result{}, err
-	   		}
-	   	} else if err != nil {
-	   		return reconcile.Result{}, err
-	   	} else {
-	   		// Pod already exists - don't requeue
-	   		reqLogger.Info("Skip reconcile: Service already exists", "Pod.Namespace", foundService.Namespace, "Pod.Name", foundService.Name)
-	   	} */
+	// Check if this Service already exists
+	foundService := &corev1.Service{}
+	err = r.client.Get(context.TODO(), types.NamespacedName{Name: lb.Name, Namespace: lb.Namespace}, foundService)
+	if err != nil && errors.IsNotFound(err) {
+		reqLogger.Info("Creating a new Service", "Service.Namespace", lb.Namespace, "Service.Name", lb.Name)
+		err = r.client.Create(context.TODO(), lb)
+		if err != nil {
+			return reconcile.Result{}, err
+		}
+	} else if err != nil {
+		return reconcile.Result{}, err
+	} else {
+		// LB already exists - don't requeue
+		reqLogger.Info("Skip reconcile: Service already exists", "Service.Namespace", foundService.Namespace, "Service.Name", foundService.Name)
+	}
 
 	return reconcile.Result{}, nil
 }
@@ -280,28 +287,24 @@ func newVolumeMountForCR(cr *interviewv1alpha1.Minecraft) *corev1.VolumeMount {
 			},
 		},
 	}
-}
+} */
 
 // newServiceForCR returns a service with the same name/namespace as the cr to load balance traffic
 // https://godoc.org/k8s.io/api/core/v1#Service
 func newServiceForCR(cr *interviewv1alpha1.Minecraft) *corev1.Service {
-	labels := map[string]string{
-		"app": cr.Name,
-	}
-	return &corev1.Pod{
+
+	return &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      cr.Name + "-pod",
+			Name:      cr.Name,
 			Namespace: cr.Namespace,
-			Labels:    labels,
 		},
-		Spec: corev1.PodSpec{
-			Containers: []corev1.Container{
+		Spec: corev1.ServiceSpec{
+			Ports: []corev1.ServicePort{
 				{
-					Name:  cr.Name,
-					Image: "us.gcr.io/kubeoperatorstest/minecraft:v1.13.2",
+					Port: 25565,
 				},
 			},
+			Type: corev1.ServiceTypeLoadBalancer,
 		},
 	}
 }
-*/
