@@ -5,6 +5,7 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -233,30 +234,32 @@ func newPodForCR(cr *interviewv1alpha1.Minecraft) *corev1.Pod {
 	}
 }
 
-/* // newPersistantVolumeClaimForCR returns a PVC for the name/namespace of the cr
+// newPersistantVolumeClaimForCR returns a PVC for the name/namespace of the cr
 // https://godoc.org/k8s.io/api/core/v1#PersistentVolumeClaim
 func newPersistantVolumeClaimForCR(cr *interviewv1alpha1.Minecraft) *corev1.PersistentVolumeClaim {
-	labels := map[string]string{
-		"app": cr.Name,
+	resList := map[corev1.ResourceName]resource.Quantity{
+		corev1.ResourceStorage: resource.MustParse("50Mi"),
 	}
-	return &corev1.Pod{
+	storageClass := "standard"
+
+	return &corev1.PersistentVolumeClaim{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      cr.Name + "-pod",
+			Name:      cr.Name + "-pvc",
 			Namespace: cr.Namespace,
-			Labels:    labels,
 		},
-		Spec: corev1.PodSpec{
-			Containers: []corev1.Container{
-				{
-					Name:  cr.Name,
-					Image: "us.gcr.io/kubeoperatorstest/minecraft:v1.13.2",
-				},
+		Spec: corev1.PersistentVolumeClaimSpec{
+			AccessModes: []corev1.PersistentVolumeAccessMode{
+				corev1.ReadWriteOnce,
 			},
+			Resources: corev1.ResourceRequirements{
+				Requests: resList,
+			},
+			StorageClassName: &storageClass,
 		},
 	}
 }
 
-// newVolumeMountForCR returns a VolumeMount
+/* // newVolumeMountForCR returns a VolumeMount
 // https://godoc.org/k8s.io/api/core/v1#VolumeMount
 func newVolumeMountForCR(cr *interviewv1alpha1.Minecraft) *corev1.VolumeMount {
 	labels := map[string]string{
