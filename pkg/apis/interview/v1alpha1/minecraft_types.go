@@ -8,7 +8,7 @@ import (
 // +k8s:openapi-gen=true
 type MinecraftSpec struct {
 	// Version is the version of the minecraft deployment
-	Version string `json:"size"`
+	Version string `json:"version"`
 }
 
 // MinecraftStatus defines the observed state of Minecraft

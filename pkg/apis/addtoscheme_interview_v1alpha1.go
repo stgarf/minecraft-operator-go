@@ -1,7 +1,7 @@
 package apis
 
 import (
-	"github.com/test/minecraft-operator-go/pkg/apis/interview/v1alpha1"
+	"github.com/stgarf/minecraft-operator-go/pkg/apis/interview/v1alpha1"
 )
 
 func init() {

@@ -1,7 +1,6 @@
 apiVersion: interview.example.com/v1alpha1
 kind: Minecraft
 metadata:
-  name: example-minecraft
+  name: minecraft-0001
 spec:
-  # Add fields here
-  size: 3
+  version: "1.13.2"

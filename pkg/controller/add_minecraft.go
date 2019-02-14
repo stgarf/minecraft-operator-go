@@ -1,7 +1,7 @@
 package controller
 
 import (
-	"github.com/test/minecraft-operator-go/pkg/controller/minecraft"
+	"github.com/stgarf/minecraft-operator-go/pkg/controller/minecraft"
 )
 
 func init() {
