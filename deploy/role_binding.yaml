@@ -1,0 +1,13 @@
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: minecraft-operator-go
+subjects:
+- kind: ServiceAccount
+  name: minecraft-operator-go
+  # Replace this with the namespace the operator is deployed in.
+  namespace: REPLACE_NAMESPACE
+roleRef:
+  kind: ClusterRole
+  name: minecraft-operator-go
+  apiGroup: rbac.authorization.k8s.io

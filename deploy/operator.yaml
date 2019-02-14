@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: minecraft-operator-go
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: minecraft-operator-go
+  template:
+    metadata:
+      labels:
+        name: minecraft-operator-go
+    spec:
+      serviceAccountName: minecraft-operator-go
+      containers:
+        - name: minecraft-operator-go
+          # Replace this with the built image name
+          image: REPLACE_IMAGE
+          command:
+          - minecraft-operator-go
+          imagePullPolicy: Always
+          env:
+            - name: WATCH_NAMESPACE
+              value: ""
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: OPERATOR_NAME
+              value: "minecraft-operator-go"
