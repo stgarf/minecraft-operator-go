@@ -130,7 +130,7 @@ func (r *ReconcileMinecraft) Reconcile(request reconcile.Request) (reconcile.Res
 }
 
 // newPodForCR returns a minecraft pod with the same name/namespace as the cr
-// https://godoc.org/k8s.io/api/core/v1#Container
+// https://godoc.org/k8s.io/api/core/v1#Pod
 func newPodForCR(cr *interviewv1alpha1.Minecraft) *corev1.Pod {
 	labels := map[string]string{
 		"app": cr.Name,
@@ -154,7 +154,7 @@ func newPodForCR(cr *interviewv1alpha1.Minecraft) *corev1.Pod {
 
 // newPersistantVolumeClaimForCR returns a PVC for the name/namespace of the cr
 // https://godoc.org/k8s.io/api/core/v1#PersistentVolumeClaim
-func newPersistantVolumeClaimForCR(cr *interviewv1alpha1.Minecraft) *corev1.Pod {
+func newPersistantVolumeClaimForCR(cr *interviewv1alpha1.Minecraft) *corev1.PersistentVolumeClaim {
 	labels := map[string]string{
 		"app": cr.Name,
 	}
@@ -177,7 +177,7 @@ func newPersistantVolumeClaimForCR(cr *interviewv1alpha1.Minecraft) *corev1.Pod 
 
 // newVolumeMountForCR returns a VolumeMount
 // https://godoc.org/k8s.io/api/core/v1#VolumeMount
-func newVolumeMountForCR(cr *interviewv1alpha1.Minecraft) *corev1.Pod {
+func newVolumeMountForCR(cr *interviewv1alpha1.Minecraft) *corev1.VolumeMount {
 	labels := map[string]string{
 		"app": cr.Name,
 	}
@@ -200,7 +200,7 @@ func newVolumeMountForCR(cr *interviewv1alpha1.Minecraft) *corev1.Pod {
 
 // newServiceForCR returns a service with the same name/namespace as the cr to load balance traffic
 // https://godoc.org/k8s.io/api/core/v1#Service
-func newServiceForCR(cr *interviewv1alpha1.Minecraft) *corev1.Pod {
+func newServiceForCR(cr *interviewv1alpha1.Minecraft) *corev1.Service {
 	labels := map[string]string{
 		"app": cr.Name,
 	}
