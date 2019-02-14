@@ -292,6 +292,9 @@ func newVolumeMountForCR(cr *interviewv1alpha1.Minecraft) *corev1.VolumeMount {
 // newServiceForCR returns a service with the same name/namespace as the cr to load balance traffic
 // https://godoc.org/k8s.io/api/core/v1#Service
 func newServiceForCR(cr *interviewv1alpha1.Minecraft) *corev1.Service {
+	labels := map[string]string{
+		"app": cr.Name,
+	}
 
 	return &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
@@ -304,7 +307,8 @@ func newServiceForCR(cr *interviewv1alpha1.Minecraft) *corev1.Service {
 					Port: 25565,
 				},
 			},
-			Type: corev1.ServiceTypeLoadBalancer,
+			Type:     corev1.ServiceTypeLoadBalancer,
+			Selector: labels,
 		},
 	}
 }
