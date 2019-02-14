@@ -23,11 +23,6 @@ import (
 
 var log = logf.Log.WithName("controller_minecraft")
 
-/**
-* USER ACTION REQUIRED: This is a scaffold file intended for the user to modify with their own Controller
-* business logic.  Delete these comments after modifying this file.*
- */
-
 // Add creates a new Minecraft Controller and adds it to the Manager. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
 func Add(mgr manager.Manager) error {
@@ -78,8 +73,6 @@ type ReconcileMinecraft struct {
 
 // Reconcile reads that state of the cluster for a Minecraft object and makes changes based on the state read
 // and what is in the Minecraft.Spec
-// TODO(user): Modify this Reconcile function to implement your Controller logic.  This example creates
-// a Pod as an example
 // Note:
 // The Controller will requeue the Request to be processed again if the returned error is non-nil or
 // Result.Requeue is true, otherwise upon completion it will remove the work from the queue.
@@ -102,7 +95,7 @@ func (r *ReconcileMinecraft) Reconcile(request reconcile.Request) (reconcile.Res
 	}
 
 	// Define a new Pod object
-	// Define a PVC as well
+	// Define a PVC and LB Service as well
 	pvc := newPersistantVolumeClaimForCR(instance)
 	pod := newPodForCR(instance)
 	lb := newServiceForCR(instance)
@@ -153,23 +146,6 @@ func (r *ReconcileMinecraft) Reconcile(request reconcile.Request) (reconcile.Res
 		// Pod already exists - don't requeue
 		reqLogger.Info("Skip reconcile: Pod already exists", "Pod.Namespace", foundPod.Namespace, "Pod.Name", foundPod.Name)
 	}
-
-	/* 	// Check if this VolumeMount already exists
-	   	foundVolumeMount := &corev1.Pod{}
-	   	err = r.client.Get(context.TODO(), types.NamespacedName{Name: pod.Name, Namespace: pod.Namespace}, foundVolumeMount)
-	   	if err != nil && errors.IsNotFound(err) {
-	   		reqLogger.Info("Creating a new VolumeMount", "Pod.Namespace", pod.Namespace, "Pod.Name", pod.Name)
-	   		err = r.client.Create(context.TODO(), pod)
-	   		if err != nil {
-	   			return reconcile.Result{}, err
-	   		}
-	   	} else if err != nil {
-	   		return reconcile.Result{}, err
-	   	} else {
-	   		// Pod already exists - don't requeue
-	   		reqLogger.Info("Skip reconcile: VolumeMount already exists", "Pod.Namespace", foundVolumeMount.Namespace, "Pod.Name", foundVolumeMount.Name)
-	   	}
-	*/
 
 	// Check if this Service already exists
 	foundService := &corev1.Service{}
@@ -266,29 +242,6 @@ func newPersistantVolumeClaimForCR(cr *interviewv1alpha1.Minecraft) *corev1.Pers
 	}
 }
 
-/* // newVolumeMountForCR returns a VolumeMount
-// https://godoc.org/k8s.io/api/core/v1#VolumeMount
-func newVolumeMountForCR(cr *interviewv1alpha1.Minecraft) *corev1.VolumeMount {
-	labels := map[string]string{
-		"app": cr.Name,
-	}
-	return &corev1.Pod{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      cr.Name + "-pod",
-			Namespace: cr.Namespace,
-			Labels:    labels,
-		},
-		Spec: corev1.PodSpec{
-			Containers: []corev1.Container{
-				{
-					Name:  cr.Name,
-					Image: "us.gcr.io/kubeoperatorstest/minecraft:v1.13.2",
-				},
-			},
-		},
-	}
-} */
-
 // newServiceForCR returns a service with the same name/namespace as the cr to load balance traffic
 // https://godoc.org/k8s.io/api/core/v1#Service
 func newServiceForCR(cr *interviewv1alpha1.Minecraft) *corev1.Service {
@@ -298,7 +251,7 @@ func newServiceForCR(cr *interviewv1alpha1.Minecraft) *corev1.Service {
 
 	return &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      cr.Name,
+			Name:      cr.Name + "-lb-service",
 			Namespace: cr.Namespace,
 			Labels:    labels,
 		},
