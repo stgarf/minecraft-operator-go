@@ -15,10 +15,7 @@ spec:
       serviceAccountName: minecraft-operator-go
       containers:
         - name: minecraft-operator-go
-          # Replace this with the built image name
-          image: REPLACE_IMAGE
-          command:
-          - minecraft-operator-go
+          image: "us.gcr.io/kubeoperatorstest/minecraft-operator-go:v1.13.2"
           imagePullPolicy: Always
           env:
             - name: WATCH_NAMESPACE

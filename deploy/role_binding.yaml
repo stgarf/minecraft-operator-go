@@ -5,8 +5,7 @@ metadata:
 subjects:
 - kind: ServiceAccount
   name: minecraft-operator-go
-  # Replace this with the namespace the operator is deployed in.
-  namespace: REPLACE_NAMESPACE
+  namespace: default
 roleRef:
   kind: ClusterRole
   name: minecraft-operator-go
