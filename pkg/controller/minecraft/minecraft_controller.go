@@ -135,6 +135,15 @@ func newPodForCR(cr *interviewv1alpha1.Minecraft) *corev1.Pod {
 	labels := map[string]string{
 		"app": cr.Name,
 	}
+
+	pvc := &corev1.PersistentVolumeClaimVolumeSource{
+		ClaimName: cr.Name + "-pvc",
+	}
+
+	fsGroup := int64(1000)
+	runAsNonRoot := true
+	runAsUser := int64(1000)
+
 	return &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      cr.Name + "-pod",
@@ -146,13 +155,32 @@ func newPodForCR(cr *interviewv1alpha1.Minecraft) *corev1.Pod {
 				{
 					Name:  cr.Name,
 					Image: "us.gcr.io/kubeoperatorstest/minecraft:v1.13.2",
+					VolumeMounts: []corev1.VolumeMount{
+						{
+							Name:      cr.Name + "-storage",
+							MountPath: "/server-data",
+						},
+					},
 				},
+			},
+			Volumes: []corev1.Volume{
+				{
+					Name: cr.Name + "-storage",
+					VolumeSource: corev1.VolumeSource{
+						PersistentVolumeClaim: pvc,
+					},
+				},
+			},
+			SecurityContext: &corev1.PodSecurityContext{
+				FSGroup:      &fsGroup,
+				RunAsNonRoot: &runAsNonRoot,
+				RunAsUser:    &runAsUser,
 			},
 		},
 	}
 }
 
-// newPersistantVolumeClaimForCR returns a PVC for the name/namespace of the cr
+/* // newPersistantVolumeClaimForCR returns a PVC for the name/namespace of the cr
 // https://godoc.org/k8s.io/api/core/v1#PersistentVolumeClaim
 func newPersistantVolumeClaimForCR(cr *interviewv1alpha1.Minecraft) *corev1.PersistentVolumeClaim {
 	labels := map[string]string{
@@ -220,3 +248,4 @@ func newServiceForCR(cr *interviewv1alpha1.Minecraft) *corev1.Service {
 		},
 	}
 }
+*/
