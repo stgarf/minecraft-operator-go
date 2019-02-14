@@ -95,7 +95,7 @@ func (r *ReconcileMinecraft) Reconcile(request reconcile.Request) (reconcile.Res
 	}
 
 	// Define a new Pod object
-	// Define a PVC as well
+	// Define a PVC and LB Service as well
 	pvc := newPersistantVolumeClaimForCR(instance)
 	pod := newPodForCR(instance)
 	lb := newServiceForCR(instance)
@@ -251,7 +251,7 @@ func newServiceForCR(cr *interviewv1alpha1.Minecraft) *corev1.Service {
 
 	return &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      cr.Name,
+			Name:      cr.Name + "-lb-service",
 			Namespace: cr.Namespace,
 			Labels:    labels,
 		},
