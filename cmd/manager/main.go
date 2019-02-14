@@ -7,8 +7,8 @@ import (
 	"os"
 	"runtime"
 
-	"github.com/test/minecraft-operator-go/pkg/apis"
-	"github.com/test/minecraft-operator-go/pkg/controller"
+	"github.com/stgarf/minecraft-operator-go/pkg/apis"
+	"github.com/stgarf/minecraft-operator-go/pkg/controller"
 
 	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
 	"github.com/operator-framework/operator-sdk/pkg/leader"
