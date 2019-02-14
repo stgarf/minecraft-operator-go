@@ -129,8 +129,78 @@ func (r *ReconcileMinecraft) Reconcile(request reconcile.Request) (reconcile.Res
 	return reconcile.Result{}, nil
 }
 
-// newPodForCR returns a busybox pod with the same name/namespace as the cr
+// newPodForCR returns a minecraft pod with the same name/namespace as the cr
+// https://godoc.org/k8s.io/api/core/v1#Container
 func newPodForCR(cr *interviewv1alpha1.Minecraft) *corev1.Pod {
+	labels := map[string]string{
+		"app": cr.Name,
+	}
+	return &corev1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      cr.Name + "-pod",
+			Namespace: cr.Namespace,
+			Labels:    labels,
+		},
+		Spec: corev1.PodSpec{
+			Containers: []corev1.Container{
+				{
+					Name:  cr.Name,
+					Image: "us.gcr.io/kubeoperatorstest/minecraft:v1.13.2",
+				},
+			},
+		},
+	}
+}
+
+// newPersistantVolumeClaimForCR returns a PVC for the name/namespace of the cr
+// https://godoc.org/k8s.io/api/core/v1#PersistentVolumeClaim
+func newPersistantVolumeClaimForCR(cr *interviewv1alpha1.Minecraft) *corev1.Pod {
+	labels := map[string]string{
+		"app": cr.Name,
+	}
+	return &corev1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      cr.Name + "-pod",
+			Namespace: cr.Namespace,
+			Labels:    labels,
+		},
+		Spec: corev1.PodSpec{
+			Containers: []corev1.Container{
+				{
+					Name:  cr.Name,
+					Image: "us.gcr.io/kubeoperatorstest/minecraft:v1.13.2",
+				},
+			},
+		},
+	}
+}
+
+// newVolumeMountForCR returns a VolumeMount
+// https://godoc.org/k8s.io/api/core/v1#VolumeMount
+func newVolumeMountForCR(cr *interviewv1alpha1.Minecraft) *corev1.Pod {
+	labels := map[string]string{
+		"app": cr.Name,
+	}
+	return &corev1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      cr.Name + "-pod",
+			Namespace: cr.Namespace,
+			Labels:    labels,
+		},
+		Spec: corev1.PodSpec{
+			Containers: []corev1.Container{
+				{
+					Name:  cr.Name,
+					Image: "us.gcr.io/kubeoperatorstest/minecraft:v1.13.2",
+				},
+			},
+		},
+	}
+}
+
+// newServiceForCR returns a service with the same name/namespace as the cr to load balance traffic
+// https://godoc.org/k8s.io/api/core/v1#Service
+func newServiceForCR(cr *interviewv1alpha1.Minecraft) *corev1.Pod {
 	labels := map[string]string{
 		"app": cr.Name,
 	}
