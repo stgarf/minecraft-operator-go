@@ -101,31 +101,84 @@ func (r *ReconcileMinecraft) Reconcile(request reconcile.Request) (reconcile.Res
 	}
 
 	// Define a new Pod object
+	// Define a PVC as well
+	pvc := newPersistantVolumeClaimForCR(instance)
 	pod := newPodForCR(instance)
 
-	// Set Minecraft instance as the owner and controller
+	// Set Minecraft instance as the owner and controller for PVC
+	if err := controllerutil.SetControllerReference(instance, pvc, r.scheme); err != nil {
+		return reconcile.Result{}, err
+	}
+
+	// Set Minecraft instance as the owner and controller for pod
 	if err := controllerutil.SetControllerReference(instance, pod, r.scheme); err != nil {
 		return reconcile.Result{}, err
 	}
 
+	// Check if this PVC already exists
+	foundPVC := &corev1.PersistentVolumeClaim{}
+	err = r.client.Get(context.TODO(), types.NamespacedName{Name: pvc.Name, Namespace: pvc.Namespace}, foundPVC)
+	if err != nil && errors.IsNotFound(err) {
+		reqLogger.Info("Creating a new PersistantVolumeClaim", "Pod.Namespace", pvc.Namespace, "Pod.Name", pvc.Name)
+		err = r.client.Create(context.TODO(), pvc)
+		if err != nil {
+			return reconcile.Result{}, err
+		}
+	} else if err != nil {
+		return reconcile.Result{}, err
+	} else {
+		// Pod already exists - don't requeue
+		reqLogger.Info("Skip reconcile: PersistantVolumeClaim already exists", "Pod.Namespace", foundPVC.Namespace, "Pod.Name", foundPVC.Name)
+	}
+
 	// Check if this Pod already exists
-	found := &corev1.Pod{}
-	err = r.client.Get(context.TODO(), types.NamespacedName{Name: pod.Name, Namespace: pod.Namespace}, found)
+	foundPod := &corev1.Pod{}
+	err = r.client.Get(context.TODO(), types.NamespacedName{Name: pod.Name, Namespace: pod.Namespace}, foundPod)
 	if err != nil && errors.IsNotFound(err) {
 		reqLogger.Info("Creating a new Pod", "Pod.Namespace", pod.Namespace, "Pod.Name", pod.Name)
 		err = r.client.Create(context.TODO(), pod)
 		if err != nil {
 			return reconcile.Result{}, err
 		}
-
-		// Pod created successfully - don't requeue
-		return reconcile.Result{}, nil
 	} else if err != nil {
 		return reconcile.Result{}, err
+	} else {
+		// Pod already exists - don't requeue
+		reqLogger.Info("Skip reconcile: Pod already exists", "Pod.Namespace", foundPod.Namespace, "Pod.Name", foundPod.Name)
 	}
 
-	// Pod already exists - don't requeue
-	reqLogger.Info("Skip reconcile: Pod already exists", "Pod.Namespace", found.Namespace, "Pod.Name", found.Name)
+	/* 	// Check if this VolumeMount already exists
+	   	foundVolumeMount := &corev1.Pod{}
+	   	err = r.client.Get(context.TODO(), types.NamespacedName{Name: pod.Name, Namespace: pod.Namespace}, foundVolumeMount)
+	   	if err != nil && errors.IsNotFound(err) {
+	   		reqLogger.Info("Creating a new VolumeMount", "Pod.Namespace", pod.Namespace, "Pod.Name", pod.Name)
+	   		err = r.client.Create(context.TODO(), pod)
+	   		if err != nil {
+	   			return reconcile.Result{}, err
+	   		}
+	   	} else if err != nil {
+	   		return reconcile.Result{}, err
+	   	} else {
+	   		// Pod already exists - don't requeue
+	   		reqLogger.Info("Skip reconcile: VolumeMount already exists", "Pod.Namespace", foundVolumeMount.Namespace, "Pod.Name", foundVolumeMount.Name)
+	   	}
+
+	   	// Check if this Service already exists
+	   	foundService := &corev1.Service{}
+	   	err = r.client.Get(context.TODO(), types.NamespacedName{Name: pod.Name, Namespace: pod.Namespace}, foundService)
+	   	if err != nil && errors.IsNotFound(err) {
+	   		reqLogger.Info("Creating a new Service", "Pod.Namespace", pod.Namespace, "Pod.Name", pod.Name)
+	   		err = r.client.Create(context.TODO(), pod)
+	   		if err != nil {
+	   			return reconcile.Result{}, err
+	   		}
+	   	} else if err != nil {
+	   		return reconcile.Result{}, err
+	   	} else {
+	   		// Pod already exists - don't requeue
+	   		reqLogger.Info("Skip reconcile: Service already exists", "Pod.Namespace", foundService.Namespace, "Pod.Name", foundService.Name)
+	   	} */
+
 	return reconcile.Result{}, nil
 }
 
